@@ -6,3 +6,6 @@ Tensorflow implementation using tfrecords
 Useage:
   1. run split_training_data.py to create tfrecords files.
   2. run train_model.py to train the CNN model. 
+  
+About data:
+  Data is too big to checkin. Thus, only 1 tfrecord file is under data directory. 
