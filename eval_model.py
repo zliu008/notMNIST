@@ -17,8 +17,9 @@ pickle_file = 'notMNIST.pickle'
 def evaluate():
     graph = tf.Graph()
     batch_size = 50
+    locs = './data/'
     with graph.as_default():
-        data_path = ['valid_' + str(i) + '.tfrecords' for i in range(2)]  # address to save the hdf5 file
+        data_path = [locs + 'valid_' + str(i) + '.tfrecords' for i in range(2)]  # address to save the hdf5 file
 
         feature = {'image': tf.FixedLenFeature([], tf.string),
                    'label': tf.FixedLenFeature([], tf.int64)}

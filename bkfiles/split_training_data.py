@@ -13,6 +13,16 @@ import tensorflow as tf
 
 ##the original file notMNIST.pickle is too big
 ##extract the training portion from it and split it into multiple files to save memory
+def split_training_data(numofSplit = 10):
+    pickle_file = './data/notMNIST.pickle'
+    train_dataset, train_labels = extract_pickle_file(pickle_file, portion = 'train_')
+    train_dataset, train_labels = reformat(train_dataset, train_labels)
+    train_dataset_sections = np.split(train_dataset, numofSplit)
+    train_labels_sections = np.split(train_labels, numofSplit)
+    for i in range(10):
+        fileName = 'notMNIST_train_' + str(i) + '.pickle'
+        with open(fileName, 'wb') as f:
+            pickle.dump((train_dataset_sections[i], train_labels_sections[i]), f, pickle.HIGHEST_PROTOCOL)
 
 def _int64_feature(value):
     return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
@@ -23,16 +33,15 @@ def _float_feature(value):
 def _bytes_feature(value):
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
-
-def create_tf_records(location, numofSplit = 10, portion = 'valid_'):
+def create_tf_records(numofSplit = 10, portion = 'valid_'):
     
-    pickle_file = location + 'notMNIST.pickle'
+    pickle_file = 'notMNIST.pickle'
     train_dataset, train_labels = extract_pickle_file(pickle_file, portion = portion)
     train_dataset_sections = np.split(train_dataset, numofSplit)
     train_labels_sections = np.split(train_labels, numofSplit)    
     
     for i in range(numofSplit):
-        val_filename = location + portion + str(i) + '.tfrecords'  # address to save the TFRecords file
+        val_filename = portion + str(i) + '.tfrecords'  # address to save the TFRecords file
         writer = tf.python_io.TFRecordWriter(val_filename)
         for j in range(train_dataset_sections[i].shape[0]):
             # Load the image
@@ -47,8 +56,8 @@ def create_tf_records(location, numofSplit = 10, portion = 'valid_'):
             writer.write(example.SerializeToString())
         writer.close()
 
-def read_tf_records(location, portion= 'valid_'):
-    data_path = [location + portion + str(i) + '.tfrecords' for i in range(1, 3)]  # address to save the hdf5 file
+def read_tf_records(portion= 'valid_'):
+    data_path = [portion + str(i) + '.tfrecords' for i in range(1, 3)]  # address to save the hdf5 file
 
     feature = {'image': tf.FixedLenFeature([], tf.string),
                'label': tf.FixedLenFeature([], tf.int64)}
@@ -78,13 +87,13 @@ def read_tf_records(location, portion= 'valid_'):
 
 
 def main(_):
-    locs = './data/'
-    create_tf_records(locs, numofSplit = 2)
-    create_tf_records(locs, numofSplit = 10, portion = 'train_')
+    
+    create_tf_records(numofSplit = 2)
+    create_tf_records(numofSplit = 10, portion = 'train_')
     graph = tf.Graph()
     
     with graph.as_default():
-        images, labels = read_tf_records(locs)
+        images, labels = read_tf_records()
     
     
     with tf.Session(graph = graph) as sess:
